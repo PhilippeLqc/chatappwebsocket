@@ -6,16 +6,15 @@
     <div class="chat-body">
       <div class="chat-messages">
         <div *ngFor="let message of messages" class="chat-message">
-          <div class="chat-message-content">
-            <p>{{ message }}</p>
-          </div>
+          <div class="chat-message-user">{{ message.user }}</div>
+          <div class="chat-message-text">{{ message.message }}</div>
         </div>
       </div>
     </div>
     <div class="chat-footer">
       <input
         type="text"
-        [(ngModel)]="message"
+        [(ngModel)]="messages"
         (keyup.enter)="sendMessage()"
         placeholder="Type your message here..."
       />

@@ -1,4 +1,3 @@
-import { Message } from "./message";
 import { Project } from "./project";
 import { Task } from "./task";
 
@@ -12,5 +11,4 @@ export interface User {
     token: string | null | undefined;
     tasks: Task[];
     projects: Project[];
-    messages: Message[];
 }
