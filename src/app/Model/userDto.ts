@@ -1,8 +1,8 @@
 export interface UserDto {
-    id: number | null | undefined;
-    username: string | null | undefined;
-    email: string | null | undefined;
-    role: string | null | undefined;
+    id: number;
+    username: string;
+    email: string;
+    role: string;
     taskIds: number[];
     projectIds: number[];
     messageIds: number[];

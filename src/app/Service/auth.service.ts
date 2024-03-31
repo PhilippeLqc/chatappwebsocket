@@ -14,14 +14,15 @@ import { UserService } from "./user.service";
 
 
 export class AuthService {
-    constructor(private http : HttpClient){ }
+    constructor(private http : HttpClient){ 
+    }
 
-    serviceURL = 'http://localhost:9000/api/auth';
-    userServiceURL = 'http://localhost:9000/api/user';
+    serviceURL = 'http://localhost:8081/api/auth';
+    userServiceURL = 'http://localhost:8081/api/user';
 
     connected : boolean = false;
-    currentUser : UserDto | null = null;
-    private Securitytoken: AuthResponseDto | null = null;
+    currentUser !: UserDto;
+    private Securitytoken : AuthResponseDto | null = null;
 
     //convert User to UserDto
     convertUserToUserDto(user: User){
@@ -46,6 +47,7 @@ export class AuthService {
             switchMap((responseLogin) => {
                 // Save the token in the Securitytoken object
                 this.Securitytoken = responseLogin;
+                console.log("Token de sécurité :", this.Securitytoken);
                 this.connected = true;
                 // Get the user by email
                 return this.http.get<UserDto>(this.userServiceURL + '/email/' + user.email);

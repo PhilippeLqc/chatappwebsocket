@@ -51,7 +51,7 @@ export class AuthentificationComponent {
 
     this.auth.login(user);
     if (this.auth.isConnected()) {
-      this.router.navigate(['/chat']);
+      this.router.navigate([`chat/${this.auth.currentUser?.id}`]); // TODO: navigate to the project component when it is created
     }
   }
 

@@ -61,8 +61,18 @@
 }
 
 .message.left .text_wrapper {
-  background-color: #FFFFFF;
+  background-color: #348f84;
   float: right;
+}
+
+.message.right .avatar {
+  float: left;
+  margin: 0 0 0 10px;
+}
+
+.message.right .text_wrapper {
+  background-color: #ffffff;
+  float: left;
 }
 
 .chat-footer {

@@ -4,7 +4,7 @@ import { ChatComponent } from './Components/chat/chat.component';
 
 export const routes: Routes = [
     {path: 'authentification', component: AuthentificationComponent},
-    {path: 'chat/:userId', component: ChatComponent},
+    {path: 'chat/:userIdchat', component: ChatComponent},
     {path: 'chat/:roomId', component: ChatComponent},
     {path: '', redirectTo: '/authentification', pathMatch: 'full'}
 ];

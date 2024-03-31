@@ -8,10 +8,23 @@
         <ul class="messages">
           <li
             class="message right"
+            *ngFor="let item of historyMessages"
+            [ngClass]="{
+              right: item.message_side === 'receiver',
+              left: item.message_side === 'sender'
+            }"
+          >
+            <div class="avatar"></div>
+            <div class="text_wrapper">
+              <div class="text">{{ item.message }}</div>
+            </div>
+          </li>
+          <li
+            class="message right"
             *ngFor="let item of messageList"
             [ngClass]="{
-              left: item.sender === userId,
-              right: item.sender !== userId
+              right: item.message_side === 'receiver',
+              left: item.message_side === 'sender'
             }"
           >
             <div class="avatar"></div>
