@@ -6,7 +6,6 @@ import { UserDto } from "../Model/userDto";
 import { Observable, of, switchMap } from "rxjs";
 import { AuthResponseDto } from "../Model/authResponseDto";
 import { UserRegisterDto } from "../Model/userRegisterDto";
-import { UserService } from "./user.service";
 
 @Injectable({
     providedIn: "root"
@@ -47,7 +46,6 @@ export class AuthService {
             switchMap((responseLogin) => {
                 // Save the token in the Securitytoken object
                 this.Securitytoken = responseLogin;
-                console.log("Token de sécurité :", this.Securitytoken);
                 this.connected = true;
                 // Get the user by email
                 return this.http.get<UserDto>(this.userServiceURL + '/email/' + user.email);
@@ -55,7 +53,6 @@ export class AuthService {
         ).subscribe((user: Object) => {
             // Save the user in the currentUser object
             this.currentUser = user as UserDto;
-            console.log("Utilisateur connecté :", this.currentUser);
         });
     }
 

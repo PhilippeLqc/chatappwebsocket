@@ -3,8 +3,7 @@ import SockJS from 'sockjs-client/dist/sockjs';
 import { Stomp } from '@stomp/stompjs';
 import { MessageDto } from '../Model/MessageDto';
 import { BehaviorSubject } from 'rxjs';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { AuthService } from './auth.service';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -13,41 +12,47 @@ export class ChatService {
 
   private stompClient: any;
   messages: MessageDto[] = [];
-  private messagesSubject: BehaviorSubject<MessageDto[]> = new BehaviorSubject<MessageDto[]>([]); // Subject pour émettre des messages
+  // BehaviorSubject to emit the messages to the components
+  private messagesSubject: BehaviorSubject<MessageDto[]> = new BehaviorSubject<MessageDto[]>([]);
 
 
-  constructor(
-    private http: HttpClient,
-    private auth: AuthService
-  ) { 
+  constructor(private http: HttpClient) { 
     this.initConnection();
     this.joinRoom('1100');
   }
 
   serviceURL = 'http://localhost:8081/api/websocket';
-  
+
+
+  // Initialize the connection to the websocket
   initConnection() {
     const url = 'http://localhost:9000/api/chat-socket';
-    const socket = new SockJS(url);
-    this.stompClient = Stomp.over(socket);
+    this.stompClient = Stomp.over(() => new SockJS(url));
+    return this.stompClient;
   }
+  // --------------------------------------------
 
+  // Join a room. The room is identified by The project ID
   joinRoom(roomId: string) {
+
     this.stompClient.connect({}, () => {
-      console.log('La méthode joinRoom a été appelée avec roomId:', roomId);
       this.stompClient.subscribe(`/topic/${roomId}`, (message: any) => {
+
+        // Parse the message and add it to the messages array
         const messageContent = JSON.parse(message.body);
         messageContent.sender = messageContent.userId;
-        console.log("messageContent", messageContent)
-        console.log("messageContent.userId", messageContent.userId)
         delete messageContent.userId;
+
+        // Add the message to the subject to emit it
         const currentMessages = this.messagesSubject.getValue();
         currentMessages.push(messageContent);
         this.messagesSubject.next(currentMessages);
       });
     });
   }
+  // --------------------------------------------
 
+  // Send a message to the room identified by the project ID and save it in the database
   sendMessage(roomId: string, ChatMessage: MessageDto) {
     this.stompClient.send(`/app/chat/${roomId}`, {}, JSON.stringify(ChatMessage));
 
@@ -55,18 +60,21 @@ export class ChatService {
     this.messagesSubject.next(currentMessages);
 
     //post message in database with bearer token
-    return this.http.post<MessageDto>(this.serviceURL + '/saveMessage', ChatMessage).subscribe((message: any) => {
-      console.log("message", message);
-    });
+    //return this.http.post<MessageDto>(this.serviceURL + '/saveMessage', ChatMessage)
   }
+  // --------------------------------------------
 
+  
+  // Get the history of messages for a room identified by the project ID
   getHistory(roomId: string) {
-    console.log("getHistory called with roomId:", roomId);
     return this.http.get<MessageDto[]>(this.serviceURL + '/getHistory/' + roomId);
   }
+  // --------------------------------------------
   
+  // Get the messages from the subject
   getMessages() {
     return this.messagesSubject.asObservable();
   }
+  // --------------------------------------------
 
 }
