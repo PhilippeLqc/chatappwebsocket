@@ -3,7 +3,7 @@ import { HttpClient } from "@angular/common/http";
 import { LogsDto } from "../Model/logsDto";
 import { User } from "../Model/user";
 import { UserDto } from "../Model/userDto";
-import { Observable, of, switchMap, tap } from "rxjs";
+import { Observable, catchError, of, switchMap, tap, throwError } from "rxjs";
 import { AuthResponseDto } from "../Model/authResponseDto";
 import { UserRegisterDto } from "../Model/userRegisterDto";
 import { ChatService } from "./chat.service";
@@ -16,9 +16,20 @@ import { Router } from "@angular/router";
 
 export class AuthService {
     constructor(private http : HttpClient, private chat: ChatService, private router: Router){ 
+
         this.Securitytoken = {
             token: '',
             refreshToken: ''
+        }
+        
+        this.currentUser = {
+            id: 0,
+            username: '',
+            email: '',
+            role: '',
+            taskIds: [],
+            projectIds: [],
+            messageIds: []
         }
     }
 
@@ -26,7 +37,7 @@ export class AuthService {
     userServiceURL = 'http://localhost:8081/api/user';
 
     connected : boolean = false;
-    currentUser !: UserDto;
+    currentUser : UserDto;
     private Securitytoken : AuthResponseDto;
 
     //convert User to UserDto
@@ -43,14 +54,14 @@ export class AuthService {
 
     // register user using UserDto
     register(user: UserRegisterDto) {
-            return this.http.post<UserDto>(this.serviceURL + '/register', user);
-        }
+        console.log(user)
+        return this.http.post<UserRegisterDto>(this.serviceURL + '/register', user).subscribe()
+    }
 
     // login user using logsDto
     login(user: LogsDto) {
         return this.http.post<AuthResponseDto>(this.serviceURL + '/login', user).pipe(
           switchMap((responseLogin) => {
-            // Save the token in the Securitytoken object
             this.Securitytoken = responseLogin;
             this.connected = true;
             this.chat.initConnection();
@@ -68,8 +79,15 @@ export class AuthService {
             } else {
                 return console.error('email or mdp invalid');
             }
-          })
-        ).subscribe();
+          }),
+          catchError((error) => {
+            if (error.status === 403) {
+              return of ({ error : 'email ou mot de passe invalide' });
+            } else {
+                return of( { error : ' bug dans la matrice ' });
+            }
+            })
+        );
       }
 
     // refresh token
@@ -88,6 +106,10 @@ export class AuthService {
 
     getRefreshToken(): string {
         return this.Securitytoken?.refreshToken || '';
+    }
+
+    getCurrentUser(): UserDto {
+        return this.currentUser;
     }
     
     // if the user is connected, redirect to the chat page of the application

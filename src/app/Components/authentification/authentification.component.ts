@@ -49,7 +49,12 @@ export class AuthentificationComponent {
       password: this.connectionFrom.value.password!
     }
 
-    this.auth.login(user);
+    this.auth.login(user).subscribe({
+      next: () => {},
+      error: (errorMessage) => {
+        this.errorMessage = errorMessage;
+      }
+    });
   }
 
   updateErrorMail() {
