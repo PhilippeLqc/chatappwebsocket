@@ -4,6 +4,7 @@ import { Stomp } from '@stomp/stompjs';
 import { MessageDto } from '../Model/MessageDto';
 import { BehaviorSubject } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,18 +12,17 @@ import { HttpClient } from '@angular/common/http';
 export class ChatService {
 
   private stompClient: any;
+  private subscription: {[roomId: string]: any} = {};
   messages: MessageDto[] = [];
   // BehaviorSubject to emit the messages to the components
   private messagesSubject: BehaviorSubject<MessageDto[]> = new BehaviorSubject<MessageDto[]>([]);
 
 
   constructor(private http: HttpClient) { 
-    this.initConnection();
-    this.joinRoom('1100');
-  }
-
+}
+  
   serviceURL = 'http://localhost:8081/api/websocket';
-
+  
 
   // Initialize the connection to the websocket
   initConnection() {
@@ -34,8 +34,12 @@ export class ChatService {
 
   // Join a room. The room is identified by The project ID
   joinRoom(roomId: string) {
+    if (this.subscription[roomId]) {
+      return;
+    }
 
     this.stompClient.connect({}, () => {
+      // TODO change RoomId by ProjectId for clarification
       this.stompClient.subscribe(`/topic/${roomId}`, (message: any) => {
 
         // Parse the message and add it to the messages array
@@ -51,16 +55,10 @@ export class ChatService {
     });
   }
   // --------------------------------------------
-
-  // Send a message to the room identified by the project ID and save it in the database
+  
+  // Send a message to the room identified by the project ID
   sendMessage(roomId: string, ChatMessage: MessageDto) {
     this.stompClient.send(`/app/chat/${roomId}`, {}, JSON.stringify(ChatMessage));
-
-    const currentMessages = this.messagesSubject.getValue();
-    this.messagesSubject.next(currentMessages);
-
-    //post message in database with bearer token
-    //return this.http.post<MessageDto>(this.serviceURL + '/saveMessage', ChatMessage)
   }
   // --------------------------------------------
 
@@ -76,5 +74,13 @@ export class ChatService {
     return this.messagesSubject.asObservable();
   }
   // --------------------------------------------
+
+  // Close the connection
+  closeConnection(roomId: string) {
+    if (this.subscription[roomId]) {
+      this.subscription[roomId].unsubscribe();
+      delete this.subscription[roomId];
+    }
+  }
 
 }
